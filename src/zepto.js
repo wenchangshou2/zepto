@@ -79,10 +79,10 @@ var Zepto = (function () {
     //
     var match, parent = element.parentNode,
       temp = !parent //是否存在父结点
-      //如果没有存在element的父结点，将就element添加到刚才创建的div当中
+    //如果没有存在element的父结点，将就element添加到刚才创建的div当中
     if (temp)(parent = tempParent).appendChild(element)
-    match = ~zepto.qsa(parent, selector).indexOf(element) 
-    temp && tempParent.removeChild(element)//将element删除
+    match = ~zepto.qsa(parent, selector).indexOf(element)
+    temp && tempParent.removeChild(element) //将element删除
     return match
   }
 
@@ -90,13 +90,13 @@ var Zepto = (function () {
     return obj == null ? String(obj) :
       class2type[toString.call(obj)] || "object"
   }
-/**
- * 判断对象是否是函数类型
- * 
- * @param {any} value 将要判断的对象
- * @returns 布尔类型，是否为函数类型
- */
-function isFunction(value) {
+  /** 
+   * 判断对象是否是函数类型
+   * 
+   * @param {any} value 将要判断的对象
+   * @returns 布尔类型，是否为函数类型
+   */
+  function isFunction(value) {
     return type(value) == "function"
   }
 
@@ -185,6 +185,7 @@ function isFunction(value) {
   }
 
   function Z(dom, selector) {
+    console.log('this',this)
     var i, len = dom ? dom.length : 0
     for (i = 0; i < len; i++) this[i] = dom[i]
     this.length = len
@@ -246,12 +247,13 @@ function isFunction(value) {
     var dom
     //如果没有提供任何选择器，直接返回一个空的Zepto集合
     if (!selector) return zepto.Z()
-    // Optimize for string selectors
+    //如果当前是一个字符串的选择器
     else if (typeof selector == 'string') {
       selector = selector.trim()
       // If it's a html fragment, create nodes from it
       // Note: In both Chrome 21 and Firefox 15, DOM error 12
       // is thrown if the fragment doesn't begin with <
+      //如果它是一个html片断,我们通过它进行创建
       if (selector[0] == '<' && fragmentRE.test(selector))
         dom = zepto.fragment(selector, RegExp.$1, context), selector = null
       // If there's a context, create a collection on that context first, and select
@@ -279,7 +281,7 @@ function isFunction(value) {
       // And last but no least, if it's a CSS selector, use it to select nodes.
       else dom = zepto.qsa(document, selector)
     }
-    // create a new Zepto collection from the nodes found
+    //通过查找到的节点来创建一个新的Zepto集合
     return zepto.Z(dom, selector)
   }
 
@@ -320,15 +322,16 @@ function isFunction(value) {
   // `$.zepto.qsa` is Zepto's CSS selector implementation which
   // uses `document.querySelectorAll` and optimizes for some special cases, like `#id`.
   // This method can be overridden in plugins.
+  //如果传入的选择器，来获取文档的对象
   zepto.qsa = function (element, selector) {
     var found,
-      maybeID = selector[0] == '#',//当前是否是id选择
-      maybeClass = !maybeID && selector[0] == '.',//当前是否是class选择
+      maybeID = selector[0] == '#', //当前是否是id选择
+      maybeClass = !maybeID && selector[0] == '.', //当前是否是class选择
       //如果当前是class或者id选择，删除第一个字符
       nameOnly = maybeID || maybeClass ? selector.slice(1) : selector, // Ensure that a 1 char tag name still gets checked
-      isSimple = simpleSelectorRE.test(nameOnly)//当前的name，是否只包含_和字母或数字
+      isSimple = simpleSelectorRE.test(nameOnly) //当前的name，是否只包含_和字母或数字
     return (element.getElementById && isSimple && maybeID) ? // Safari DocumentFragment doesn't have getElementById
-    //element.getElementById存在并且是采用id选择方式
+      //element.getElementById存在并且是采用id选择方式
       ((found = element.getElementById(nameOnly)) ? [found] : []) :
       //如果当前的element的类型不为element或者document或DocumentFragment节点，返回一个空数组
       (element.nodeType !== 1 && element.nodeType !== 9 && element.nodeType !== 11) ? [] :
@@ -1002,6 +1005,8 @@ function isFunction(value) {
 
   // Generate the `after`, `prepend`, `before`, `append`,
   // `insertAfter`, `insertBefore`, `appendTo`, and `prependTo` methods.
+  //zepto.Z.prototype = Z.prototype = $.fn
+  //自动生成'after','prepend','before','append','insertAfter','insertBefore','appendTo','prependTo'方法挂载到zepto的原型上
   adjacencyOperators.forEach(function (operator, operatorIndex) {
     var inside = operatorIndex % 2 //=> prepend, append
 
