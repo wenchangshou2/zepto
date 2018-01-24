@@ -85,8 +85,9 @@ var Zepto = (function () {
     temp && tempParent.removeChild(element) //将element删除
     return match
   }
-
+  //获取对象的数据类型
   function type(obj) {
+    console.log('class2type',class2type,toString.call())
     return obj == null ? String(obj) :
       class2type[toString.call(obj)] || "object"
   }
@@ -117,8 +118,8 @@ var Zepto = (function () {
   }
 
   function likeArray(obj) {
-    var length = !!obj && 'length' in obj && obj.length,
-      type = $.type(obj)
+    var length = !!obj && 'length' in obj && obj.length,//是否含有length属性
+      type = $.type(obj)//获取对象的类型
 
     return 'function' != type && !isWindow(obj) && (
       'array' == type || length === 0 ||
@@ -198,9 +199,11 @@ var Zepto = (function () {
   // This function can be overridden in plugins for example to make
   // it compatible with browsers that don't support the DOM fully.
   zepto.fragment = function (html, name, properties) {
+    console.log('fragment',html,name,properties)
     var dom, nodes, container
 
     // A special case optimization for a single tag
+    //针对单个标签的特殊化处理，如<br/>
     if (singleTagRE.test(html)) dom = $(document.createElement(RegExp.$1))
 
     if (!dom) {
@@ -210,7 +213,11 @@ var Zepto = (function () {
 
       container = containers[name]
       container.innerHTML = '' + html
+      console.log('container.childNodes',container)
+      console.log('11',slice.call(container.childNodes))
+      console.log('22',slice,emptyArray,container,container.childNodes)
       dom = $.each(slice.call(container.childNodes), function () {
+        console.log('33',this)
         container.removeChild(this)
       })
     }
@@ -349,10 +356,11 @@ var Zepto = (function () {
 
   $.contains = document.documentElement.contains ?
     function (parent, node) {
+      //判断parent是否相等，node是否为parent的后代节点
       return parent !== node && parent.contains(node)
     } :
     function (parent, node) {
-      while (node && (node = node.parentNode))
+      while (node && (node = node.parentNode))//不断的获取你结点，直到为null为止
         if (node === parent) return true
       return false
     }
@@ -435,7 +443,7 @@ var Zepto = (function () {
   $.map = function (elements, callback) {
     var value, values = [],
       i, key
-    if (likeArray(elements))
+    if (likeArray(elements))//是否是一个有效的数组
       for (i = 0; i < elements.length; i++) {
         value = callback(elements[i], i)
         if (value != null) values.push(value)
@@ -449,8 +457,9 @@ var Zepto = (function () {
   }
 
   $.each = function (elements, callback) {
+    console.log('element',elements,likeArray(elements))
     var i, key
-    if (likeArray(elements)) {
+    if (likeArray(elements)) {//如果元素是一个类数组
       for (i = 0; i < elements.length; i++)
         if (callback.call(elements[i], i, elements[i]) === false) return elements
     } else {
@@ -1011,11 +1020,11 @@ var Zepto = (function () {
     var inside = operatorIndex % 2 //=> prepend, append
 
     $.fn[operator] = function () {
-      // arguments can be nodes, arrays of nodes, Zepto objects and HTML strings
-      var argType, nodes = $.map(arguments, function (arg) {
+      //arguments可以是nodes，结点数组，Zpeoto对象和HTML字符串
+      var argType, nodes = $.map(arguments, function (arg) {//遍历所有的元素
           var arr = []
-          argType = type(arg)
-          if (argType == "array") {
+          argType = type(arg)//获取参数类型
+          if (argType == "array") {//如果参数是数组
             arg.forEach(function (el) {
               if (el.nodeType !== undefined) return arr.push(el)
               else if ($.zepto.isZ(el)) return arr = arr.concat(el.get())
@@ -1024,13 +1033,13 @@ var Zepto = (function () {
             return arr
           }
           return argType == "object" || arg == null ?
-            arg : zepto.fragment(arg)
+            arg : zepto.fragment(arg)//如果当前是一个html字符串
         }),
         parent, copyByClone = this.length > 1
       if (nodes.length < 1) return this
 
       return this.each(function (_, target) {
-        parent = inside ? target : target.parentNode
+        parent = inside ? target : target.parentNode//如果是向后追回的返回target,否则返回父节点
 
         // convert all methods to a "before" operation
         target = operatorIndex == 0 ? target.nextSibling :
