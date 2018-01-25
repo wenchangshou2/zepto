@@ -87,7 +87,6 @@ var Zepto = (function () {
   }
   //获取对象的数据类型
   function type(obj) {
-    console.log('class2type',class2type,toString.call())
     return obj == null ? String(obj) :
       class2type[toString.call(obj)] || "object"
   }
@@ -186,7 +185,6 @@ var Zepto = (function () {
   }
 
   function Z(dom, selector) {
-    console.log('this',this)
     var i, len = dom ? dom.length : 0
     for (i = 0; i < len; i++) this[i] = dom[i]
     this.length = len
@@ -299,36 +297,36 @@ var Zepto = (function () {
   $ = function (selector, context) {
     return zepto.init(selector, context)
   }
-
+  //复制对象
   function extend(target, source, deep) {
-    for (key in source)
+    for (key in source)//遍历将要复制的对象
+      //判断是否是深度复制，并且是一个对象或数组类型
       if (deep && (isPlainObject(source[key]) || isArray(source[key]))) {
-        if (isPlainObject(source[key]) && !isPlainObject(target[key]))
-          target[key] = {}
-        if (isArray(source[key]) && !isArray(target[key]))
-          target[key] = []
-        extend(target[key], source[key], deep)
+        if (isPlainObject(source[key]) && !isPlainObject(target[key]))//如果是对象类型
+          target[key] = {}//初始化空对象
+        if (isArray(source[key]) && !isArray(target[key]))//如果数组类型
+          target[key] = []//初始化空数组
+        extend(target[key], source[key], deep)//递归调用 
       }
     else if (source[key] !== undefined) target[key] = source[key]
+    //如果是简单对象或浅度复制，直接进行赋值操作
   }
 
   // Copy all but undefined properties from one or more
   // objects to the `target` object.
+  //进行对象拷贝
+  //target若为布尔类型，true深度复制
   $.extend = function (target) {
     var deep, args = slice.call(arguments, 1)
     if (typeof target == 'boolean') {
       deep = target
-      target = args.shift()
+      target = args.shift()//因为target被状态位占用，取第二位
     }
-    args.forEach(function (arg) {
+    args.forEach(function (arg) {//进行复制
       extend(target, arg, deep)
     })
     return target
   }
-
-  // `$.zepto.qsa` is Zepto's CSS selector implementation which
-  // uses `document.querySelectorAll` and optimizes for some special cases, like `#id`.
-  // This method can be overridden in plugins.
   //如果传入的选择器，来获取文档的对象
   zepto.qsa = function (element, selector) {
     var found,
@@ -457,7 +455,6 @@ var Zepto = (function () {
   }
 
   $.each = function (elements, callback) {
-    console.log('element',elements,likeArray(elements))
     var i, key
     if (likeArray(elements)) {//如果元素是一个类数组
       for (i = 0; i < elements.length; i++)

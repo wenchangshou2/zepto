@@ -6,7 +6,7 @@
 
 ;(function($){
   var slice = Array.prototype.slice
-
+  //延时执行
   function Deferred(func) {
     var tuples = [
           // action, add listener, listener list, final state
