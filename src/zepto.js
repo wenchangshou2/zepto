@@ -60,7 +60,7 @@ var Zepto = (function () {
       'frameborder': 'frameBorder',
       'contenteditable': 'contentEditable'
     },
-    isArray = Array.isArray ||
+    isArray = Array.isArray ||//判断是否是一个数组对象
     function (object) {
       return object instanceof Array
     }
@@ -111,7 +111,8 @@ var Zepto = (function () {
   function isObject(obj) {
     return type(obj) == "object"
   }
-
+  //判断是否是一个普通的对象
+  //{},new Object
   function isPlainObject(obj) {
     return isObject(obj) && !isWindow(obj) && Object.getPrototypeOf(obj) == Object.prototype
   }
@@ -135,8 +136,10 @@ var Zepto = (function () {
   function flatten(array) {
     return array.length > 0 ? $.fn.concat.apply([], array) : array
   }
+  //将字符串转转成驼峰的命令方式，如get-url转换成getUrl
   camelize = function (str) {
     return str.replace(/-+(.)?/g, function (match, chr) {
+      console.log(chr)
       return chr ? chr.toUpperCase() : ''
     })
   }
@@ -351,12 +354,13 @@ var Zepto = (function () {
   function filtered(nodes, selector) {
     return selector == null ? $(nodes) : $(nodes).filter(selector)
   }
-
-  $.contains = document.documentElement.contains ?
+  //parent是否包含node
+  $.contains = document.documentElement.contains ?//contains在手机端的支持不太好
     function (parent, node) {
       //判断parent是否相等，node是否为parent的后代节点
       return parent !== node && parent.contains(node)
     } :
+    //不断的向上搜索，判断是否存在的类与parent一致
     function (parent, node) {
       while (node && (node = node.parentNode))//不断的获取你结点，直到为null为止
         if (node === parent) return true
@@ -414,7 +418,7 @@ var Zepto = (function () {
     for (name in obj) return false
     return true
   }
-
+  //是否是一个有效数字
   $.isNumeric = function (val) {
     var num = Number(val),
       type = typeof val
@@ -422,12 +426,14 @@ var Zepto = (function () {
       (type != 'string' || val.length) &&
       !isNaN(num) && isFinite(num) || false
   }
-
+  //判断array是否含有elem元素
+  //i表示可选项，表示从第几个元素进行搜索
   $.inArray = function (elem, array, i) {
     return emptyArray.indexOf.call(array, elem, i)
   }
 
   $.camelCase = camelize
+  //去两边空格，只是多加了一个判空操作
   $.trim = function (str) {
     return str == null ? "" : String.prototype.trim.call(str)
   }
@@ -436,7 +442,7 @@ var Zepto = (function () {
   $.uuid = 0
   $.support = {}
   $.expr = {}
-  $.noop = function () {}
+  $.noop = function () {}//一个空函数
 
   $.map = function (elements, callback) {
     var value, values = [],
@@ -453,20 +459,20 @@ var Zepto = (function () {
       }
     return flatten(values)
   }
-
+  //遍历元素
   $.each = function (elements, callback) {
     var i, key
-    if (likeArray(elements)) {//如果元素是一个类数组
+    if (likeArray(elements)) {//判断是否是类数组的格式，{"a","b","c"}
       for (i = 0; i < elements.length; i++)
         if (callback.call(elements[i], i, elements[i]) === false) return elements
     } else {
-      for (key in elements)
+      for (key in elements)//{"a":1,"b":2}
         if (callback.call(elements[key], key, elements[key]) === false) return elements
     }
 
     return elements
   }
-
+  //通过filter进行元素过滤,返回过滤后新的数组
   $.grep = function (elements, callback) {
     return filter.call(elements, callback)
   }
@@ -883,6 +889,7 @@ var Zepto = (function () {
       }, classRE(name))
     },
     addClass: function (name) {
+      console.log('this',this)
       if (!name) return this
       return this.each(function (idx) {
         if (!('className' in this)) return
