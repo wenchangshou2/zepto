@@ -619,6 +619,13 @@ var Zepto = (function () {
       })
       return result
     },
+    /** 
+     * 返回第一个匹配的父元素
+     * 
+     * @param {any} selector 选择器
+     * @param {any} context  上下文
+     * @returns 返回匹配的第一个父元素结点
+     */
     closest: function (selector, context) {
       var nodes = [],
         collection = typeof selector == 'object' && $(selector)

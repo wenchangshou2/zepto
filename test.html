@@ -7,40 +7,41 @@
     <script src="./dist/zepto.js"></script>
     <title>Document</title>
     <script defer>
-        let timeOutEvent=0;
-        $('#btn').on('touchstart',function(e){
-            alert('e')
-        })
-        $('#btn').on({
-            touchstart:function(e){
-                timeOutEvent=setTimeout('longPress()',1000)
-                e.preventDefault();
-            },
-            touchmove:function(){
-                clearTimeout(timeOutEvent); 
-		    	timeOutEvent = 0; 
-            },
-            touched:function(){
-                clearTimeout(timeOutEvent)
-                if(timeOutEvent!=0){
-                    alert('短按')
-                }
-                return false
-            }
+        // let timeOutEvent=0;
+        // $('#btn').on('touchstart',function(e){
+        //     alert('e')
+        // })
+        // $('#btn').on({
+        //     touchstart:function(e){
+        //         timeOutEvent=setTimeout('longPress()',1000)
+        //         e.preventDefault();
+        //     },
+        //     touchmove:function(){
+        //         clearTimeout(timeOutEvent); 
+		//     	timeOutEvent = 0; 
+        //     },
+        //     touched:function(){
+        //         clearTimeout(timeOutEvent)
+        //         if(timeOutEvent!=0){
+        //             alert('短按')
+        //         }
+        //         return false
+        //     }
 
-        }
-        )
-        function longPress(){
-            timeOutEvent=0
-            alert('长按')
-        }
+        // }
+        // )
+        // function longPress(){
+        //     timeOutEvent=0
+        //     alert('长按')
+        // }
     </script>
 </head>
 <body>
     <p id="person">
         <span></span>
     </p>
-    <button id="btn">点击</button>
+    <button id="btn1">点击</button>
+    <button id="btn2">点击</button>
     
 </body>
 </html>
