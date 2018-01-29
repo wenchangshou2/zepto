@@ -34,20 +34,33 @@
   function zid(element) {
     return element._zid || (element._zid = _zid++)
   }
-
-  function findHandlers(element, event, fn, selector) {
+/**
+ * 查找缓冲的句柄
+ * 
+ * @param {any} element 
+ * @param {any} event 
+ * @param {any} fn 
+ * @param {any} selector 
+ * @returns 
+ */
+function findHandlers(element, event, fn, selector) {
     event = parse(event)
-    if (event.ns) var matcher = matcherFor(event.ns)
+    if (event.ns) var matcher = matcherFor(event.ns)//如果存在着命名空间
     return (handlers[zid(element)] || []).filter(function (handler) {
       return handler &&
         (!event.e || handler.e == event.e) &&
-        (!event.ns || matcher.test(handler.ns)) &&
-        (!fn || zid(handler.fn) === zid(fn)) &&
-        (!selector || handler.sel == selector)
+        (!event.ns || matcher.test(handler.ns)) &&//如果指定ns,命令空间也需要一致
+        (!fn || zid(handler.fn) === zid(fn)) &&如果指定了fn,那么handler.fn和fn的zid需要一致
+        (!selector || handler.sel == selector)//句柄中的选择器必须与指定的选择器一致
     })
   }
-
-  function parse(event) {
+/**
+ * 事件解析
+ * 
+ * @param {any} event 事件名称
+ * @returns 返回{e:'',ns:''}格式 
+ */
+function parse(event) {
     var parts = ('' + event).split('.')
     return {
       e: parts[0],
@@ -110,12 +123,14 @@ function realEvent(type) {
           return handler.fn.apply(this, arguments)
       }
       handler.del = delegator
-      var callback = delegator || fn
-      handler.proxy = function (e) {
+      var callback = delegator || fn//autoRemove以及delegator的优先级更高
+      handler.proxy = function (e) {//触发事件执行的操作
         e = compatible(e)
         if (e.isImmediatePropagationStopped()) return
         e.data = data
+        //执行回调事件，并且绑定上下文
         var result = callback.apply(element, e._args == undefined ? [e] : [e].concat(e._args))
+        //如果返回false,取消事件的默认行为以及停止事件的传播
         if (result === false) e.preventDefault(), e.stopPropagation()
         return result
       }
@@ -126,13 +141,22 @@ function realEvent(type) {
         element.addEventListener(realEvent(handler.e), handler.proxy, eventCapture(handler, capture))
     })
   }
-
-  function remove(element, events, fn, selector, capture) {
-    var id = zid(element);
-    (events || '').split(/\s/).forEach(function (event) {
+/**
+ * 删除事件
+ * 
+ * @param {any} element 元素结点
+ * @param {any} events 事件名称
+ * @param {any} fn 事件调用的函数
+ * @param {any} selector 选择器
+ * @param {any} capture 
+ */
+function remove(element, events, fn, selector, capture) {
+    var id = zid(element);//当前元素上的事件id
+    (events || '').split(/\s/).forEach(function (event) {//按空格进行拆分,并且进行遍历
       findHandlers(element, event, fn, selector).forEach(function (handler) {
         delete handlers[id][handler.i]
-        if ('removeEventListener' in element)
+        if ('removeEventListener' in element)//如果element原型上存在着removeEventListener方法
+        //调用 removeEventListener进行事件删除
           element.removeEventListener(realEvent(handler.e), handler.proxy, eventCapture(handler, capture))
       })
     })
@@ -169,6 +193,7 @@ function realEvent(type) {
   $.fn.unbind = function (event, callback) {
     return this.off(event, callback)
   }
+  //仅会调用一次
   $.fn.one = function (event, selector, data, callback) {
     return this.on(event, selector, data, callback, 1)
   }
@@ -179,17 +204,17 @@ function realEvent(type) {
     returnFalse = function () {
       return false
     },
+    // 用来排除 A-Z 开头，即所有大写字母开头的属性，还有以returnValue 结尾，layerX/layerY ，webkitMovementX/webkitMovementY 结尾的非标准属性。
     ignoreProperties = /^([A-Z]|returnValue$|layer[XY]$|webkitMovement[XY]$)/,
     eventMethods = {
       preventDefault: 'isDefaultPrevented',
       stopImmediatePropagation: 'isImmediatePropagationStopped',
       stopPropagation: 'isPropagationStopped'
     }
-
+    //做兼容处理
   function compatible(event, source) {
-    if (source || !event.isDefaultPrevented) {
+    if (source || !event.isDefaultPrevented) {//如果source存在
       source || (source = event)
-
       $.each(eventMethods, function (name, predicate) {
         var sourceMethod = source[name]
         event[name] = function () {
@@ -269,17 +294,18 @@ function realEvent(type) {
     //on({ type: handler, type2: handler2, ... }, [selector], [data])  ⇒ self v1.1+
     return $this.each(function (_, element) {
       if (one) autoRemove = function (e) {//如果当前只触发一次，触发后自动解决事件的绑定
-        remove(element, e.type, callback)
+        remove(element, e.type, callback)//
         return callback.apply(this, arguments)
       }
 
       if (selector) delegator = function (e) {
+        //通过selector查询对应的父结点对应的元素，并且返回匹配的第一个对象
         var evt, match = $(e.target).closest(selector, element).get(0)
-        if (match && match !== element) {
+        if (match && match !== element) {//如果存在着该 元素并且，不为element结点
           evt = $.extend(createProxy(e), {
             currentTarget: match,
             liveFired: element
-          })
+          })//扩展对象，添加currentTarget和liveFired
           return (autoRemove || callback).apply(match, [evt].concat(slice.call(arguments, 1)))
         }
       }
@@ -287,21 +313,23 @@ function realEvent(type) {
       add(element, event, callback, data, selector, delegator || autoRemove)
     })
   }
+  //解除事件的绑定
   $.fn.off = function (event, selector, callback) {
     var $this = this
+    //如果当前event为数组，遍历调用 
     if (event && !isString(event)) {
       $.each(event, function (type, fn) {
         $this.off(type, selector, fn)
       })
       return $this
     }
-
+    //如果选择器不为字符串类型，并且callback不为函数类型，callback不为false
     if (!isString(selector) && !isFunction(callback) && callback !== false)
-      callback = selector, selector = undefined
+      callback = selector, selector = undefined//将selector赋值给callback，并且 清空 
 
-    if (callback === false) callback = returnFalse
+    if (callback === false) callback = returnFalse//如果callback为空，直接返回false,没有绑定任何事件，不需要做任何处理
 
-    return $this.each(function () {
+    return $this.each(function () {//遍历删除
       remove(this, event, callback, selector)
     })
   }
@@ -311,9 +339,10 @@ function realEvent(type) {
     event._args = args
     return this.each(function () {
       // handle focus(), blur() by calling them directly
+      //如果focus和blur，直接调用 
       if (event.type in focus && typeof this[event.type] == "function") this[event.type]()
       // items in the collection might not be DOM elements
-      else if ('dispatchEvent' in this) this.dispatchEvent(event)
+      else if ('dispatchEvent' in this) this.dispatchEvent(event)//dispatchEvent进行触发 
       else $(this).triggerHandler(event, args)
     })
   }
@@ -347,6 +376,7 @@ function realEvent(type) {
   })
 
   $.Event = function (type, props) {
+    // 当type是个对象时,比如{type: 'click', data: 'test'}
     if (!isString(type)) props = type, type = props.type
     var event = document.createEvent(specialEvents[type] || 'Events'),
       bubbles = true
